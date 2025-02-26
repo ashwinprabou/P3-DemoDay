@@ -1,0 +1,211 @@
+/* app/page.module.css */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.navLink {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: white;
+  text-decoration: none;
+}
+
+.main {
+  flex-grow: 1;
+  padding: 1.5rem;
+  margin: 1rem;
+}
+
+.logoSection {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.logoText {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.labConnect {
+  color: #1a365d;
+}
+
+.ucsc {
+  color: #ecc94b;
+}
+
+.taglineContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.25rem;
+  margin-bottom: 3rem;
+}
+
+.divider {
+  display: none;
+  height: 1.5rem;
+  border-left: 2px solid #000000;
+}
+
+.tagline {
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.uploadSection {
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.uploadButton {
+  background-color: #fef9c3;
+  color: #1a202c;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 2rem auto;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.uploadButton:hover {
+  background-color: #fde68a;
+}
+
+.uploadIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.fileDisplay {
+  margin-bottom: 2.5rem;
+}
+
+.fileContainer {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.25rem;
+}
+
+.fileHeader {
+  background-color: #edf2f7;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.fileContent {
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fileName {
+  font-size: 0.875rem;
+}
+
+.deleteButton {
+  color: #718096;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.deleteButton:hover {
+  color: #c12222;
+}
+
+.deleteIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.connectButton {
+  background-color: #fcd34d;
+  color: #1a202c;
+  font-weight: 700;
+  padding: 0.75rem 2rem;
+  border-radius: 0.75rem;
+  font-size: 1.25rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: block;
+  margin: 0 auto 4rem auto;
+}
+
+.connectButton:hover {
+  background-color: #fbbf24;
+}
+
+.footer {
+  background-color: #1e3a8a;
+  color: white;
+  padding: 1.5rem;
+}
+
+.footerContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.footerLinks {
+  margin-bottom: 1rem;
+}
+
+.footerLink {
+  margin-bottom: 0.5rem;
+  display: block;
+  color: white;
+  text-decoration: none;
+}
+
+.footerLink:hover {
+  text-decoration: underline;
+}
+
+.contactInfo {
+  font-size: 0.875rem;
+  margin-top: 1rem;
+}
+
+/* Media Queries */
+@media (min-width: 768px) {
+  .taglineContainer {
+    flex-direction: row;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .divider {
+    display: block;
+  }
+
+  .tagline {
+    margin-bottom: 0;
+  }
+
+  .footerContent {
+    flex-direction: row;
+  }
+
+  .footerLinks {
+    margin-bottom: 0;
+  }
+
+  .contactInfo {
+    margin-top: 0;
+  }
+}
