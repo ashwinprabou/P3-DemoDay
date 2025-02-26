@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "../page.module.css"; // Import your CSS module for styling
 
+
 interface Lab {
   id: number;
   name: string;

@@ -1,0 +1,148 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+  }
+  
+  .header {
+    background-color: #f0f0f0;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .logo {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .labConnect {
+    color: #1a365d;
+    font-size: 2rem;
+    font-weight: bold;
+  }
+  
+  .ucsc {
+    color: #ffd700;
+    font-size: 2rem;
+    font-weight: bold;
+  }
+  
+  .homeButton {
+    background-color: #808080;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+  }
+  
+  .mainContent {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    padding: 2rem;
+  }
+  
+  .description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+  
+  .researcherGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 1rem;
+  }
+  
+  .researcherAvatar {
+    width: 100px;
+    height: 100px;
+    background-color: #ddd;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+  }
+  
+  .projectCards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .projectCard {
+    background-color: #ffd700;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+  
+  .applyButton {
+    background-color: #1a365d;
+    color: white;
+    border: none;
+    padding: 0.5rem 2rem;
+    border-radius: 4px;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+  
+  .mapSection {
+    background-color: #ddd;
+    height: 300px;
+    position: relative;
+  }
+  
+  .mapMarker {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
+    background-image: url('path-to-marker-icon.svg');
+  }
+  
+  .actionButtons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .contactLab {
+    background-color: #1a365d;
+    color: white;
+    border: none;
+    padding: 0.5rem 2rem;
+    border-radius: 4px;
+  }
+  
+  .backToDirectory {
+    background-color: #808080;
+    color: white;
+    border: none;
+    padding: 0.5rem 2rem;
+    border-radius: 4px;
+  }
+  
+  .footer {
+    background-color: #1a365d;
+    color: white;
+    padding: 2rem;
+    margin-top: 2rem;
+  }
+  
+  .footerLinks {
+    display: flex;
+    gap: 2rem;
+  }
+  
+  .footerLinks a {
+    color: white;
+    text-decoration: none;
+  }
+  
+  .footerContact {
+    margin-top: 1rem;
+  }
