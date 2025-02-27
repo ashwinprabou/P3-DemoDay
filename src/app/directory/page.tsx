@@ -3,15 +3,24 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../page.module.css"; // Import your CSS module for styling
-
+import Papa from "papaparse";
 
 interface Lab {
   id: number;
   name: string;
   department: string;
-  description: string;
-  matchScore: number;
-  funding: number; // Add funding property
+  //description: string;
+  //matchScore: number;
+  //funding: number; // Add funding property
+}
+
+interface CsvRow {
+  Name: string;
+  Department: string;
+  Description: string;
+  matchScore: string;
+  funding: string;
+  Professor: string;
 }
 
 interface Filters {
@@ -28,42 +37,8 @@ interface Filters {
 }
 
 export default function Directory() {
-  const recommendedLabs: Lab[] = [
-    {
-      id: 1,
-      name: "Molecular Biology",
-      department: "Biology",
-      description: "Focusing on genetic research and DNA sequencing.",
-      matchScore: 95,
-      funding: 5000, // Example funding value
-    },
-    {
-      id: 2,
-      name: "Quantum Physics Lab",
-      department: "Physics",
-      description: "Studying the property of new materials.",
-      matchScore: 87,
-      funding: 3000, // Example funding value
-    },
-    {
-      id: 3,
-      name: "Cell Biology",
-      department: "Biology",
-      description: "Studying the structure and function of cells.",
-      matchScore: 82,
-      funding: 2000, // Example funding value
-    },
-    {
-      id: 4,
-      name: "Astrophysics Lab",
-      department: "Physics",
-      description: "Exploring the universe and celestial phenomena.",
-      matchScore: 78,
-      funding: 1000, // Example funding value
-    },
-  ];
-
-  const [filteredLabs, setFilteredLabs] = useState<Lab[]>(recommendedLabs);
+  const [labs, setLabs] = useState<Lab[]>([]);
+  const [filteredLabs, setFilteredLabs] = useState<Lab[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filters, setFilters] = useState<Filters>({
     departments: {
@@ -82,26 +57,59 @@ export default function Directory() {
     },
   });
 
-  const filterLabs = (searchTerm: string, minFunding: number) => {
-    const filtered = recommendedLabs.filter(
-      (lab) =>
-        (lab.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          lab.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          lab.description.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        lab.funding >= minFunding // Filter by funding
-    );
+  // Fetch labs data
+  useEffect(() => {
+    const csvUrl =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vSmDz9hjnoVXz6sgthlfFxb9HLI8bNDqXa7VGPG1hgCTisC5i1N28FgWR0qmHqAHBepV1fE5_YpIbyq/pub?output=csv";
+
+    Papa.parse<CsvRow>(csvUrl, {
+      download: true,
+      header: true,
+      complete: (results) => {
+        const labs = results.data.map((row, index) => ({
+          id: index + 1,
+          name: row.Name,
+          department: row.Department,
+          description: row.Description,
+          profName: row.Professor,
+          //matchScore: parseInt(row.matchScore),
+          funding: parseInt(row.funding),
+        }));
+        setLabs(labs);
+        setFilteredLabs(labs);
+      },
+    });
+  }, []); // Empty dependency array for loading once
+
+  // Filter labs based on search term and funding
+  const filterLabs = (searchTerm: string) => {
+    const filtered = labs.filter((lab) => {
+      const name = lab.name?.toLowerCase() || "";
+      const department = lab.department?.toLowerCase() || "";
+      //const description = lab.description?.toLowerCase() || "";
+
+      return (
+        name.includes(searchTerm.toLowerCase()) ||
+        department.includes(searchTerm.toLowerCase())
+        //description.includes(searchTerm.toLowerCase())
+        //lab.funding >= minFunding
+      );
+    });
+
     setFilteredLabs(filtered);
   };
 
+  // Update filtered labs when search term or funding filter changes
+  useEffect(() => {
+    filterLabs(searchTerm);
+  }, [searchTerm, filters.funding.min, labs]);
+
+  // Handle search input changes
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    filterLabs(e.target.value, filters.funding.min);
   };
 
-  useEffect(() => {
-    filterLabs(searchTerm, filters.funding.min);
-  }, [filters.funding.min, searchTerm]);
-
+  // Toggle department filter
   const toggleDepartmentFilter = (department: string) => {
     setFilters({
       ...filters,
@@ -112,6 +120,7 @@ export default function Directory() {
     });
   };
 
+  // Toggle focus filter
   const toggleFocusFilter = (focus: string) => {
     setFilters({
       ...filters,
@@ -459,17 +468,13 @@ export default function Directory() {
                       <div style={customStyles.labCardContent}>
                         <div style={customStyles.labCardHeader}>
                           <h4 style={customStyles.labName}>{lab.name}</h4>
-                          <span style={customStyles.matchScore}>
-                            {lab.matchScore}% Match
-                          </span>
                         </div>
                         <p style={customStyles.department}>{lab.department}</p>
-                        <p style={customStyles.description}>
-                          {lab.description}
-                        </p>
-                        <button style={customStyles.viewProfileButton}>
-                          View Profile
-                        </button>
+                        <a href={`/directory/${lab.id}`}>
+                          <button style={customStyles.viewProfileButton}>
+                            View Profile
+                          </button>
+                        </a>
                       </div>
                     </div>
                   ))}
