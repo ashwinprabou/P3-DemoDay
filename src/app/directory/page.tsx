@@ -13,6 +13,7 @@ interface Lab {
   profName: string;
   relevantMajors: string[];  // Add array of relevant majors
   focusAreas: string[];      // Add array of focus areas
+  matchScore?: number; // Add optional match score
 }
 
 interface CsvRow {
@@ -148,7 +149,7 @@ const majorKeywords: { [key: string]: string[] } = {
   ]
 };
 
-// Enhanced analysis function with scoring
+// Enhanced analyzeLabForMajors function with weighted scoring
 const analyzeLabForMajors = (description: string, department: string): string[] => {
   const scores: { [key: string]: number } = {};
   const descriptionLower = description.toLowerCase();
@@ -157,26 +158,31 @@ const analyzeLabForMajors = (description: string, department: string): string[] 
   // Initialize scores
   Object.keys(majorKeywords).forEach(major => {
     scores[major] = 0;
-  });
-
-  // Score based on department (higher weight)
-  Object.keys(majorKeywords).forEach(major => {
-    if (departmentLower.includes(major.toLowerCase())) {
-      scores[major] += 3; // Higher weight for department match
+    
+    // Department exact match gets highest weight
+    if (departmentLower === major.toLowerCase()) {
+      scores[major] += 5;
+    }
+    // Department contains major name gets medium weight
+    else if (departmentLower.includes(major.toLowerCase())) {
+      scores[major] += 3;
     }
   });
 
-  // Score based on keywords in description
+  // Score based on keywords in description with diminishing returns
   Object.entries(majorKeywords).forEach(([major, keywords]) => {
+    const matches = new Set<string>();
     keywords.forEach(keyword => {
       if (descriptionLower.includes(keyword.toLowerCase())) {
-        scores[major] += 1;
+        matches.add(keyword);
       }
     });
+    // Add score based on unique matches to prevent keyword spam
+    scores[major] += Math.min(matches.size, 5);
   });
 
-  // Return majors with scores above threshold (adjust as needed)
-  const threshold = 2; // Minimum score to be considered relevant
+  // Return majors with scores above threshold
+  const threshold = 2;
   return Object.entries(scores)
     .filter(([_, score]) => score >= threshold)
     .sort(([_, scoreA], [__, scoreB]) => scoreB - scoreA)
@@ -214,13 +220,13 @@ export default function Directory() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filters, setFilters] = useState<Filters>({
     departments: {
+      "Science": false,
+      "Technology": false,
       "Engineering": false,
-      "Natural Sciences": false,
-      "Computer & Data Sciences": false,
-      "Life Sciences": false,
+      "Mathematics": false,
+      "Social Sciences": false,
       "Physical Sciences": false,
-      "Applied Sciences": false,
-      "Mathematical Sciences": false,
+      "Biology": false,
       "Biomedical Sciences": false,
     },
     focus: {
@@ -395,40 +401,71 @@ export default function Directory() {
     });
   };
 
-  // Update filterLabs function to use the department mapping
+  // Enhanced filterLabs function with better search and filtering
   const filterLabs = (searchTerm: string) => {
     const filtered = labs.filter((lab) => {
-      const searchFields = [
-        lab.name?.toLowerCase() || "",
-        lab.department?.toLowerCase() || "",
-        lab.description?.toLowerCase() || "",
-        lab.profName?.toLowerCase() || "",
-      ];
-      const searchTermLower = searchTerm.toLowerCase();
-      
-      const selectedDepartment = Object.entries(filters.departments).find(([_, isSelected]) => isSelected);
-      const selectedFocus = Object.entries(filters.focus).find(([_, isSelected]) => isSelected);
-      const selectedMajor = Object.entries(filters.majors).find(([_, isSelected]) => isSelected);
+      // Improved search matching
+      const searchMatch = !searchTerm || [
+        lab.name,
+        lab.department,
+        lab.description,
+        lab.profName,
+        ...lab.relevantMajors,
+        ...lab.focusAreas
+      ].some(field => 
+        field?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
 
-      // Department matching now checks if the lab's department falls under the broader category
+      // Get active filters
+      const selectedDepartment = Object.entries(filters.departments).find(([_, isSelected]) => isSelected)?.[0];
+      const selectedFocus = Object.entries(filters.focus).find(([_, isSelected]) => isSelected)?.[0];
+      const selectedMajor = Object.entries(filters.majors).find(([_, isSelected]) => isSelected)?.[0];
+
+      // Enhanced department matching
       const departmentMatch = !selectedDepartment || (
-        selectedDepartment && 
-        (lab.department.includes(selectedDepartment[0]) || 
-         lab.relevantMajors.some(major => getMajorDepartment(major) === selectedDepartment[0]))
+        lab.department.includes(selectedDepartment) || 
+        lab.relevantMajors.some(major => getMajorDepartment(major) === selectedDepartment)
       );
-      
-      const focusMatch = !selectedFocus || (selectedFocus && lab.focusAreas.includes(selectedFocus[0]));
-      const majorMatch = !selectedMajor || (selectedMajor && lab.relevantMajors.includes(selectedMajor[0]));
 
-      return (
-        searchFields.some(field => field.includes(searchTermLower)) &&
-        departmentMatch &&
-        focusMatch &&
-        majorMatch
-      );
+      // Direct focus and major matching
+      const focusMatch = !selectedFocus || lab.focusAreas.includes(selectedFocus);
+      const majorMatch = !selectedMajor || lab.relevantMajors.includes(selectedMajor);
+
+      return searchMatch && departmentMatch && focusMatch && majorMatch;
     });
 
+    // Sort results by relevance if there's a search term
+    if (searchTerm) {
+      filtered.sort((a, b) => {
+        const aRelevance = calculateRelevance(a, searchTerm);
+        const bRelevance = calculateRelevance(b, searchTerm);
+        return bRelevance - aRelevance;
+      });
+    }
+
     setFilteredLabs(filtered);
+  };
+
+  // New helper function to calculate result relevance
+  const calculateRelevance = (lab: Lab, searchTerm: string): number => {
+    let score = 0;
+    const term = searchTerm.toLowerCase();
+    
+    // Exact matches in important fields get higher scores
+    if (lab.name.toLowerCase().includes(term)) score += 10;
+    if (lab.department.toLowerCase().includes(term)) score += 8;
+    if (lab.profName.toLowerCase().includes(term)) score += 6;
+    if (lab.description.toLowerCase().includes(term)) score += 4;
+    
+    // Matches in arrays get lower scores
+    lab.relevantMajors.forEach(major => {
+      if (major.toLowerCase().includes(term)) score += 3;
+    });
+    lab.focusAreas.forEach(focus => {
+      if (focus.toLowerCase().includes(term)) score += 2;
+    });
+    
+    return score;
   };
 
   // Update useEffect to include all filter dependencies
