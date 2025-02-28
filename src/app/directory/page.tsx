@@ -11,10 +11,9 @@ interface Lab {
   department: string;
   description: string;
   profName: string;
-  relevantMajors: string[]; // Add array of relevant majors
-  focusAreas: string[]; // Add array of focus areas
-  matchScore?: number; // Add optional match score
-  assignedDepartments: string[]; // Add this line
+  relevantMajors: string[];
+  focusAreas: string[];
+  assignedDepartments: string[];
 }
 
 interface CsvRow {
@@ -252,9 +251,9 @@ const analyzeLabForMajors = (
   // Return majors with scores above threshold
   const threshold = 2;
   return Object.entries(scores)
-    .filter(([_, score]) => score >= threshold)
-    .sort(([_, scoreA], [__, scoreB]) => scoreB - scoreA)
-    .map(([major, _]) => major);
+    .filter(([, score]) => score >= threshold)
+    .sort(([, scoreA], [, scoreB]) => scoreB - scoreA)
+    .map(([major]) => major);
 };
 
 // Helper function to analyze lab description and extract focus areas
@@ -353,92 +352,9 @@ const analyzeLabForDepartments = (
   // Return departments with scores above threshold
   const threshold = 2;
   return Object.entries(scores)
-    .filter(([_, score]) => score >= threshold)
-    .sort(([_, scoreA], [__, scoreB]) => scoreB - scoreA)
-    .map(([dept, _]) => dept);
-};
-
-// Update isDepartmentRelevant function to be more lenient with matching
-const isDepartmentRelevant = (
-  labDepartment: string,
-  selectedDepartment: string
-): boolean => {
-  if (!selectedDepartment) return true;
-
-  const departmentRelations: { [key: string]: string[] } = {
-    Science: [
-      "Biology",
-      "Chemistry",
-      "Physics",
-      "Life Sciences",
-      "Physical Sciences",
-      "Natural Sciences",
-    ],
-    Technology: [
-      "Computer Science",
-      "Information Technology",
-      "Software Engineering",
-      "Computing",
-      "IT",
-    ],
-    Engineering: [
-      "Mechanical",
-      "Electrical",
-      "Chemical",
-      "Civil",
-      "Biomedical",
-      "Engineering",
-    ],
-    Mathematics: [
-      "Mathematics",
-      "Statistics",
-      "Applied Mathematics",
-      "Mathematical",
-    ],
-    "Social Sciences": [
-      "Psychology",
-      "Sociology",
-      "Economics",
-      "Political Science",
-      "Social",
-    ],
-    "Physical Sciences": [
-      "Physics",
-      "Chemistry",
-      "Astronomy",
-      "Earth Sciences",
-      "Physical",
-    ],
-    Biology: [
-      "Biology",
-      "Molecular",
-      "Biochemistry",
-      "Life Sciences",
-      "Biological",
-    ],
-    "Biomedical Sciences": [
-      "Biology",
-      "Biomedical",
-      "Medical",
-      "Life Sciences",
-      "Health",
-    ],
-  };
-
-  // Convert both to lowercase for case-insensitive comparison
-  const labDeptLower = labDepartment.toLowerCase();
-  const selectedDeptLower = selectedDepartment.toLowerCase();
-
-  // Direct match check
-  if (labDeptLower.includes(selectedDeptLower)) {
-    return true;
-  }
-
-  // Check related departments
-  const relatedDepartments = departmentRelations[selectedDepartment] || [];
-  return relatedDepartments.some((dept) =>
-    labDeptLower.includes(dept.toLowerCase())
-  );
+    .filter(([, score]) => score >= threshold)
+    .sort(([, scoreA], [, scoreB]) => scoreB - scoreA)
+    .map(([dept]) => dept);
 };
 
 export default function Directory() {
@@ -502,49 +418,6 @@ export default function Directory() {
     },
   });
 
-  // Helper function to map specific majors to broader departments
-  const getMajorDepartment = (major: string): string => {
-    const departmentMap: { [key: string]: string } = {
-      // Engineering Department
-      "Mechanical Engineering": "Engineering",
-      "Electrical Engineering": "Engineering",
-      "Chemical Engineering": "Engineering",
-      "Computer Engineering": "Engineering",
-      "Biomedical Engineering": "Engineering",
-      "Civil Engineering": "Engineering",
-      "Aerospace Engineering": "Engineering",
-      "Environmental Engineering": "Engineering",
-      "Materials Engineering": "Engineering",
-      "Industrial Engineering": "Engineering",
-
-      // Computer & Data Sciences Department
-      "Computer Science": "Computer & Data Sciences",
-      "Data Science": "Computer & Data Sciences",
-      "Software Engineering": "Computer & Data Sciences",
-      "Information Technology": "Computer & Data Sciences",
-
-      // Life Sciences Department
-      Biology: "Life Sciences",
-      Biochemistry: "Life Sciences",
-      "Molecular Biology": "Life Sciences",
-      Neuroscience: "Life Sciences",
-      Biotechnology: "Life Sciences",
-
-      // Physical Sciences Department
-      Physics: "Physical Sciences",
-      Chemistry: "Physical Sciences",
-      Astronomy: "Physical Sciences",
-      "Earth Sciences": "Physical Sciences",
-
-      // Mathematical Sciences Department
-      Mathematics: "Mathematical Sciences",
-      "Applied Mathematics": "Mathematical Sciences",
-      Statistics: "Mathematical Sciences",
-      "Computational Mathematics": "Mathematical Sciences",
-    };
-    return departmentMap[major] || "";
-  };
-
   // Fetch labs data
   useEffect(() => {
     const csvUrl =
@@ -554,7 +427,7 @@ export default function Directory() {
       download: true,
       header: true,
       complete: (results) => {
-        const labs = results.data.map((row, index) => {
+        const labsData = results.data.map((row, index) => {
           const relevantMajors = analyzeLabForMajors(
             row.Description,
             row.Department
@@ -576,8 +449,8 @@ export default function Directory() {
             assignedDepartments,
           };
         });
-        setLabs(labs);
-        setFilteredLabs(labs);
+        setLabs(labsData);
+        setFilteredLabs(labsData);
       },
     });
   }, []); // Empty dependency array for loading once
@@ -658,11 +531,11 @@ export default function Directory() {
   };
 
   // Update the filterLabs function
-  const filterLabs = (searchTerm: string) => {
+  const filterLabs = (term: string) => {
     const filtered = labs.filter((lab) => {
       // Search term matching
       const searchMatch =
-        !searchTerm ||
+        !term ||
         [
           lab.name,
           lab.department,
@@ -670,19 +543,17 @@ export default function Directory() {
           lab.profName,
           ...lab.relevantMajors,
           ...lab.focusAreas,
-        ].some((field) =>
-          field?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        ].some((field) => field?.toLowerCase().includes(term.toLowerCase()));
 
       // Get active filters
       const selectedDepartment = Object.entries(filters.departments).find(
-        ([_, isSelected]) => isSelected
+        ([, isSelected]) => isSelected
       )?.[0];
       const selectedFocus = Object.entries(filters.focus).find(
-        ([_, isSelected]) => isSelected
+        ([, isSelected]) => isSelected
       )?.[0];
       const selectedMajor = Object.entries(filters.majors).find(
-        ([_, isSelected]) => isSelected
+        ([, isSelected]) => isSelected
       )?.[0];
 
       // Department matching using assigned departments
@@ -701,7 +572,7 @@ export default function Directory() {
 
     // Sort results by department relevance if department is selected
     const selectedDepartment = Object.entries(filters.departments).find(
-      ([_, isSelected]) => isSelected
+      ([, isSelected]) => isSelected
     )?.[0];
 
     if (selectedDepartment) {
@@ -717,28 +588,6 @@ export default function Directory() {
     }
 
     setFilteredLabs(filtered);
-  };
-
-  // New helper function to calculate result relevance
-  const calculateRelevance = (lab: Lab, searchTerm: string): number => {
-    let score = 0;
-    const term = searchTerm.toLowerCase();
-
-    // Exact matches in important fields get higher scores
-    if (lab.name.toLowerCase().includes(term)) score += 10;
-    if (lab.department.toLowerCase().includes(term)) score += 8;
-    if (lab.profName.toLowerCase().includes(term)) score += 6;
-    if (lab.description.toLowerCase().includes(term)) score += 4;
-
-    // Matches in arrays get lower scores
-    lab.relevantMajors.forEach((major) => {
-      if (major.toLowerCase().includes(term)) score += 3;
-    });
-    lab.focusAreas.forEach((focus) => {
-      if (focus.toLowerCase().includes(term)) score += 2;
-    });
-
-    return score;
   };
 
   // Update useEffect to include all filter dependencies
@@ -889,18 +738,6 @@ export default function Directory() {
       fontSize: "1.125rem",
       fontWeight: "bold",
       color: "#1a365d",
-    } as const,
-    matchScore: {
-      backgroundColor: "#f0fff4",
-      color: "#22543d",
-      fontSize: "0.75rem",
-      fontWeight: "600",
-      padding: "0.125rem 0.625rem",
-      borderRadius: "9999px",
-    } as const,
-    lowMatchScore: {
-      backgroundColor: "#f7fafc",
-      color: "#4a5568",
     } as const,
     department: {
       fontSize: "0.875rem",
