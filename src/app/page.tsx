@@ -1,8 +1,26 @@
-// app/page.tsx
+"use client"; // Required for Next.js when using state/hooks in app directory
+
+import { useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
 
 export default function Landing() {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === "application/pdf") {
+      setSelectedFile(file);
+      console.log("Selected file:", file);
+    } else {
+      alert("Please upload a valid PDF file.");
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+  };
+
   return (
     <div className={styles.container}>
       {/* Main Content Area */}
@@ -28,7 +46,17 @@ export default function Landing() {
         {/* File Upload Section */}
         <div className={styles.uploadSection}>
           <div>
-            <button className={styles.uploadButton}>
+            {/* Hidden file input */}
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+              id="pdf-upload"
+            />
+
+            {/* Button that triggers file input */}
+            <label htmlFor="pdf-upload" className={styles.uploadButton}>
               <svg
                 className={styles.uploadIcon}
                 fill="currentColor"
@@ -41,33 +69,36 @@ export default function Landing() {
                 />
               </svg>
               Upload your transcript or resume
-            </button>
+            </label>
           </div>
 
-          {/* File Upload Display */}
-          <div className={styles.fileDisplay}>
-            <div className={styles.fileContainer}>
-              <div className={styles.fileHeader}>FILE NAME</div>
-              <div className={styles.fileContent}>
-                <span className={styles.fileName}>
-                  Firstname_Lastname_Resume.pdf
-                </span>
-                <button className={styles.deleteButton}>
-                  <svg
-                    className={styles.deleteIcon}
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+          {/* File Upload Display (Only shows if file is selected) */}
+          {selectedFile && (
+            <div className={styles.fileDisplay}>
+              <div className={styles.fileContainer}>
+                <div className={styles.fileHeader}>FILE NAME</div>
+                <div className={styles.fileContent}>
+                  <span className={styles.fileName}>{selectedFile.name}</span>
+                  <button
+                    className={styles.deleteButton}
+                    onClick={handleRemoveFile}
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
+                    <svg
+                      className={styles.deleteIcon}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Connect Button */}
           <div>
