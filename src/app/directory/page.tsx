@@ -11,8 +11,8 @@ interface Lab {
   department: string;
   description: string;
   profName: string;
-  relevantMajors: string[];  // Add array of relevant majors
-  focusAreas: string[];      // Add array of focus areas
+  relevantMajors: string[]; // Add array of relevant majors
+  focusAreas: string[]; // Add array of focus areas
   matchScore?: number; // Add optional match score
   assignedDepartments: string[]; // Add this line
 }
@@ -52,7 +52,7 @@ const majorKeywords: { [key: string]: string[] } = {
     "web development",
     "cybersecurity",
     "computer vision",
-    "natural language processing"
+    "natural language processing",
   ],
   "Electrical Engineering": [
     "electrical",
@@ -67,7 +67,7 @@ const majorKeywords: { [key: string]: string[] } = {
     "VLSI",
     "communications",
     "RF",
-    "wireless"
+    "wireless",
   ],
   "Mechanical Engineering": [
     "mechanical",
@@ -82,7 +82,7 @@ const majorKeywords: { [key: string]: string[] } = {
     "aerospace",
     "automotive",
     "biomechanics",
-    "mechatronics"
+    "mechatronics",
   ],
   "Chemical Engineering": [
     "chemical",
@@ -94,9 +94,9 @@ const majorKeywords: { [key: string]: string[] } = {
     "catalysis",
     "biochemical",
     "nanotechnology",
-    "electrochemistry"
+    "electrochemistry",
   ],
-  "Biology": [
+  Biology: [
     "biology",
     "molecular",
     "cellular",
@@ -108,9 +108,9 @@ const majorKeywords: { [key: string]: string[] } = {
     "physiology",
     "biotechnology",
     "genomics",
-    "proteomics"
+    "proteomics",
   ],
-  "Chemistry": [
+  Chemistry: [
     "chemistry",
     "organic",
     "inorganic",
@@ -120,9 +120,9 @@ const majorKeywords: { [key: string]: string[] } = {
     "spectroscopy",
     "materials chemistry",
     "biochemistry",
-    "pharmaceutical"
+    "pharmaceutical",
   ],
-  "Physics": [
+  Physics: [
     "physics",
     "quantum",
     "optics",
@@ -133,9 +133,9 @@ const majorKeywords: { [key: string]: string[] } = {
     "condensed matter",
     "nuclear",
     "plasma",
-    "computational physics"
+    "computational physics",
   ],
-  "Mathematics": [
+  Mathematics: [
     "mathematics",
     "mathematical",
     "statistics",
@@ -146,48 +146,87 @@ const majorKeywords: { [key: string]: string[] } = {
     "probability",
     "optimization",
     "numerical methods",
-    "differential equations"
-  ]
+    "differential equations",
+  ],
 };
 
 // Add department keywords mapping
 const departmentKeywords: { [key: string]: string[] } = {
-  "Science": [
-    "science", "scientific", "research", "laboratory", "experimental"
+  Science: ["science", "scientific", "research", "laboratory", "experimental"],
+  Technology: [
+    "technology",
+    "software",
+    "computing",
+    "digital",
+    "cyber",
+    "information",
+    "tech",
   ],
-  "Technology": [
-    "technology", "software", "computing", "digital", "cyber", "information", "tech"
+  Engineering: [
+    "engineering",
+    "design",
+    "systems",
+    "mechanical",
+    "electrical",
+    "chemical",
+    "civil",
+    "biomedical",
   ],
-  "Engineering": [
-    "engineering", "design", "systems", "mechanical", "electrical", "chemical", "civil", "biomedical"
-  ],
-  "Mathematics": [
-    "mathematics", "mathematical", "statistics", "computational", "numerical", "algebraic"
+  Mathematics: [
+    "mathematics",
+    "mathematical",
+    "statistics",
+    "computational",
+    "numerical",
+    "algebraic",
   ],
   "Social Sciences": [
-    "social", "psychology", "sociology", "economics", "behavioral", "cognitive"
+    "social",
+    "psychology",
+    "sociology",
+    "economics",
+    "behavioral",
+    "cognitive",
   ],
   "Physical Sciences": [
-    "physics", "chemistry", "astronomy", "geological", "material", "quantum"
+    "physics",
+    "chemistry",
+    "astronomy",
+    "geological",
+    "material",
+    "quantum",
   ],
-  "Biology": [
-    "biology", "biological", "molecular", "cellular", "genetic", "organism"
+  Biology: [
+    "biology",
+    "biological",
+    "molecular",
+    "cellular",
+    "genetic",
+    "organism",
   ],
   "Biomedical Sciences": [
-    "biomedical", "medical", "clinical", "health", "therapeutic", "diagnostic"
-  ]
+    "biomedical",
+    "medical",
+    "clinical",
+    "health",
+    "therapeutic",
+    "diagnostic",
+  ],
 };
 
 // Enhanced analyzeLabForMajors function with weighted scoring
-const analyzeLabForMajors = (description: string, department: string): string[] => {
+const analyzeLabForMajors = (
+  description: string,
+  department: string
+): string[] => {
   const scores: { [key: string]: number } = {};
   const descriptionLower = description.toLowerCase();
   const departmentLower = department.toLowerCase();
 
   // Initialize scores
-  Object.keys(majorKeywords).forEach(major => {
+  Object.keys(majorKeywords).forEach((major) => {
     scores[major] = 0;
-    
+
     // Department exact match gets highest weight
     if (departmentLower === major.toLowerCase()) {
       scores[major] += 5;
@@ -201,7 +240,7 @@ const analyzeLabForMajors = (description: string, department: string): string[] 
   // Score based on keywords in description with diminishing returns
   Object.entries(majorKeywords).forEach(([major, keywords]) => {
     const matches = new Set<string>();
-    keywords.forEach(keyword => {
+    keywords.forEach((keyword) => {
       if (descriptionLower.includes(keyword.toLowerCase())) {
         matches.add(keyword);
       }
@@ -221,21 +260,54 @@ const analyzeLabForMajors = (description: string, department: string): string[] 
 // Helper function to analyze lab description and extract focus areas
 const analyzeLabForFocus = (description: string): string[] => {
   const focusKeywords: { [key: string]: string[] } = {
-    "Artificial Intelligence": ["artificial intelligence", "AI", "machine learning", "deep learning", "neural networks"],
-    "Data Science": ["data science", "big data", "analytics", "statistical analysis", "data mining"],
-    "Biotechnology": ["biotechnology", "genetic engineering", "molecular biology", "cell culture"],
-    "Robotics": ["robotics", "automation", "control systems", "mechatronics"],
-    "Materials Science": ["materials", "nanomaterials", "polymers", "composites"],
-    "Environmental Science": ["environmental", "sustainability", "climate", "ecology"],
+    "Artificial Intelligence": [
+      "artificial intelligence",
+      "AI",
+      "machine learning",
+      "deep learning",
+      "neural networks",
+    ],
+    "Data Science": [
+      "data science",
+      "big data",
+      "analytics",
+      "statistical analysis",
+      "data mining",
+    ],
+    Biotechnology: [
+      "biotechnology",
+      "genetic engineering",
+      "molecular biology",
+      "cell culture",
+    ],
+    Robotics: ["robotics", "automation", "control systems", "mechatronics"],
+    "Materials Science": [
+      "materials",
+      "nanomaterials",
+      "polymers",
+      "composites",
+    ],
+    "Environmental Science": [
+      "environmental",
+      "sustainability",
+      "climate",
+      "ecology",
+    ],
     "Quantum Computing": ["quantum", "quantum mechanics", "quantum computing"],
-    "Medical Research": ["medical", "biomedical", "clinical", "therapeutic", "drug discovery"]
+    "Medical Research": [
+      "medical",
+      "biomedical",
+      "clinical",
+      "therapeutic",
+      "drug discovery",
+    ],
   };
 
   const focusAreas: string[] = [];
   const descriptionLower = description.toLowerCase();
 
   Object.entries(focusKeywords).forEach(([focus, keywords]) => {
-    if (keywords.some(keyword => descriptionLower.includes(keyword))) {
+    if (keywords.some((keyword) => descriptionLower.includes(keyword))) {
       focusAreas.push(focus);
     }
   });
@@ -244,15 +316,18 @@ const analyzeLabForFocus = (description: string): string[] => {
 };
 
 // Add function to analyze lab for departments
-const analyzeLabForDepartments = (description: string, labDepartment: string): string[] => {
+const analyzeLabForDepartments = (
+  description: string,
+  labDepartment: string
+): string[] => {
   const scores: { [key: string]: number } = {};
   const descriptionLower = description.toLowerCase();
   const labDepartmentLower = labDepartment.toLowerCase();
 
   // Initialize scores
-  Object.keys(departmentKeywords).forEach(dept => {
+  Object.keys(departmentKeywords).forEach((dept) => {
     scores[dept] = 0;
-    
+
     // Department exact match gets highest weight
     if (labDepartmentLower === dept.toLowerCase()) {
       scores[dept] += 5;
@@ -266,7 +341,7 @@ const analyzeLabForDepartments = (description: string, labDepartment: string): s
   // Score based on keywords in description
   Object.entries(departmentKeywords).forEach(([dept, keywords]) => {
     const matches = new Set<string>();
-    keywords.forEach(keyword => {
+    keywords.forEach((keyword) => {
       if (descriptionLower.includes(keyword.toLowerCase())) {
         matches.add(keyword);
       }
@@ -284,18 +359,70 @@ const analyzeLabForDepartments = (description: string, labDepartment: string): s
 };
 
 // Update isDepartmentRelevant function to be more lenient with matching
-const isDepartmentRelevant = (labDepartment: string, selectedDepartment: string): boolean => {
+const isDepartmentRelevant = (
+  labDepartment: string,
+  selectedDepartment: string
+): boolean => {
   if (!selectedDepartment) return true;
-  
+
   const departmentRelations: { [key: string]: string[] } = {
-    "Science": ["Biology", "Chemistry", "Physics", "Life Sciences", "Physical Sciences", "Natural Sciences"],
-    "Technology": ["Computer Science", "Information Technology", "Software Engineering", "Computing", "IT"],
-    "Engineering": ["Mechanical", "Electrical", "Chemical", "Civil", "Biomedical", "Engineering"],
-    "Mathematics": ["Mathematics", "Statistics", "Applied Mathematics", "Mathematical"],
-    "Social Sciences": ["Psychology", "Sociology", "Economics", "Political Science", "Social"],
-    "Physical Sciences": ["Physics", "Chemistry", "Astronomy", "Earth Sciences", "Physical"],
-    "Biology": ["Biology", "Molecular", "Biochemistry", "Life Sciences", "Biological"],
-    "Biomedical Sciences": ["Biology", "Biomedical", "Medical", "Life Sciences", "Health"],
+    Science: [
+      "Biology",
+      "Chemistry",
+      "Physics",
+      "Life Sciences",
+      "Physical Sciences",
+      "Natural Sciences",
+    ],
+    Technology: [
+      "Computer Science",
+      "Information Technology",
+      "Software Engineering",
+      "Computing",
+      "IT",
+    ],
+    Engineering: [
+      "Mechanical",
+      "Electrical",
+      "Chemical",
+      "Civil",
+      "Biomedical",
+      "Engineering",
+    ],
+    Mathematics: [
+      "Mathematics",
+      "Statistics",
+      "Applied Mathematics",
+      "Mathematical",
+    ],
+    "Social Sciences": [
+      "Psychology",
+      "Sociology",
+      "Economics",
+      "Political Science",
+      "Social",
+    ],
+    "Physical Sciences": [
+      "Physics",
+      "Chemistry",
+      "Astronomy",
+      "Earth Sciences",
+      "Physical",
+    ],
+    Biology: [
+      "Biology",
+      "Molecular",
+      "Biochemistry",
+      "Life Sciences",
+      "Biological",
+    ],
+    "Biomedical Sciences": [
+      "Biology",
+      "Biomedical",
+      "Medical",
+      "Life Sciences",
+      "Health",
+    ],
   };
 
   // Convert both to lowercase for case-insensitive comparison
@@ -309,7 +436,7 @@ const isDepartmentRelevant = (labDepartment: string, selectedDepartment: string)
 
   // Check related departments
   const relatedDepartments = departmentRelations[selectedDepartment] || [];
-  return relatedDepartments.some(dept => 
+  return relatedDepartments.some((dept) =>
     labDeptLower.includes(dept.toLowerCase())
   );
 };
@@ -320,20 +447,20 @@ export default function Directory() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filters, setFilters] = useState<Filters>({
     departments: {
-      "Science": false,
-      "Technology": false,
-      "Engineering": false,
-      "Mathematics": false,
+      Science: false,
+      Technology: false,
+      Engineering: false,
+      Mathematics: false,
       "Social Sciences": false,
       "Physical Sciences": false,
-      "Biology": false,
+      Biology: false,
       "Biomedical Sciences": false,
     },
     focus: {
       "Artificial Intelligence": false,
       "Data Science": false,
-      "Biotechnology": false,
-      "Robotics": false,
+      Biotechnology: false,
+      Robotics: false,
       "Materials Science": false,
       "Environmental Science": false,
       "Quantum Computing": false,
@@ -357,20 +484,20 @@ export default function Directory() {
       "Software Engineering": false,
       "Information Technology": false,
       // Life Sciences
-      "Biology": false,
-      "Biochemistry": false,
+      Biology: false,
+      Biochemistry: false,
       "Molecular Biology": false,
-      "Neuroscience": false,
-      "Biotechnology": false,
+      Neuroscience: false,
+      Biotechnology: false,
       // Physical Sciences
-      "Physics": false,
-      "Chemistry": false,
-      "Astronomy": false,
+      Physics: false,
+      Chemistry: false,
+      Astronomy: false,
       "Earth Sciences": false,
       // Mathematical Sciences
-      "Mathematics": false,
+      Mathematics: false,
       "Applied Mathematics": false,
-      "Statistics": false,
+      Statistics: false,
       "Computational Mathematics": false,
     },
   });
@@ -389,30 +516,30 @@ export default function Directory() {
       "Environmental Engineering": "Engineering",
       "Materials Engineering": "Engineering",
       "Industrial Engineering": "Engineering",
-      
+
       // Computer & Data Sciences Department
       "Computer Science": "Computer & Data Sciences",
       "Data Science": "Computer & Data Sciences",
       "Software Engineering": "Computer & Data Sciences",
       "Information Technology": "Computer & Data Sciences",
-      
+
       // Life Sciences Department
-      "Biology": "Life Sciences",
-      "Biochemistry": "Life Sciences",
+      Biology: "Life Sciences",
+      Biochemistry: "Life Sciences",
       "Molecular Biology": "Life Sciences",
-      "Neuroscience": "Life Sciences",
-      "Biotechnology": "Life Sciences",
-      
+      Neuroscience: "Life Sciences",
+      Biotechnology: "Life Sciences",
+
       // Physical Sciences Department
-      "Physics": "Physical Sciences",
-      "Chemistry": "Physical Sciences",
-      "Astronomy": "Physical Sciences",
+      Physics: "Physical Sciences",
+      Chemistry: "Physical Sciences",
+      Astronomy: "Physical Sciences",
       "Earth Sciences": "Physical Sciences",
-      
+
       // Mathematical Sciences Department
-      "Mathematics": "Mathematical Sciences",
+      Mathematics: "Mathematical Sciences",
       "Applied Mathematics": "Mathematical Sciences",
-      "Statistics": "Mathematical Sciences",
+      Statistics: "Mathematical Sciences",
       "Computational Mathematics": "Mathematical Sciences",
     };
     return departmentMap[major] || "";
@@ -428,10 +555,16 @@ export default function Directory() {
       header: true,
       complete: (results) => {
         const labs = results.data.map((row, index) => {
-          const relevantMajors = analyzeLabForMajors(row.Description, row.Department);
+          const relevantMajors = analyzeLabForMajors(
+            row.Description,
+            row.Department
+          );
           const focusAreas = analyzeLabForFocus(row.Description);
-          const assignedDepartments = analyzeLabForDepartments(row.Description, row.Department);
-          
+          const assignedDepartments = analyzeLabForDepartments(
+            row.Description,
+            row.Department
+          );
+
           return {
             id: index + 1,
             name: row.Name,
@@ -451,95 +584,125 @@ export default function Directory() {
 
   // Update department filter for dropdown
   const toggleDepartmentFilter = (department: string) => {
-    const newDepartments = Object.keys(filters.departments).reduce((acc, dept) => ({
-      ...acc,
-      [dept]: dept === department
-    }), {});
+    const newDepartments = Object.keys(filters.departments).reduce(
+      (acc, dept) => ({
+        ...acc,
+        [dept]: dept === department,
+      }),
+      {}
+    );
 
-    setFilters(prevFilters => ({
+    setFilters((prevFilters) => ({
       ...prevFilters,
-      departments: department === "" ? 
-        Object.keys(prevFilters.departments).reduce((acc, dept) => ({
-          ...acc,
-          [dept]: false
-        }), {}) 
-        : newDepartments
+      departments:
+        department === ""
+          ? Object.keys(prevFilters.departments).reduce(
+              (acc, dept) => ({
+                ...acc,
+                [dept]: false,
+              }),
+              {}
+            )
+          : newDepartments,
     }));
   };
 
   // Update focus filter for dropdown
   const toggleFocusFilter = (focus: string) => {
-    const newFocus = Object.keys(filters.focus).reduce((acc, f) => ({
-      ...acc,
-      [f]: f === focus // Only set selected focus to true
-    }), {});
+    const newFocus = Object.keys(filters.focus).reduce(
+      (acc, f) => ({
+        ...acc,
+        [f]: f === focus, // Only set selected focus to true
+      }),
+      {}
+    );
 
     setFilters({
       ...filters,
-      focus: focus === "" ? // If "All Focus Areas" is selected
-        Object.keys(filters.focus).reduce((acc, f) => ({
-          ...acc,
-          [f]: false
-        }), {})
-        : newFocus
+      focus:
+        focus === "" // If "All Focus Areas" is selected
+          ? Object.keys(filters.focus).reduce(
+              (acc, f) => ({
+                ...acc,
+                [f]: false,
+              }),
+              {}
+            )
+          : newFocus,
     });
   };
 
   // Add major filter toggle function
   const toggleMajorFilter = (major: string) => {
-    const newMajors = Object.keys(filters.majors).reduce((acc, m) => ({
-      ...acc,
-      [m]: m === major // Only set selected major to true
-    }), {});
+    const newMajors = Object.keys(filters.majors).reduce(
+      (acc, m) => ({
+        ...acc,
+        [m]: m === major, // Only set selected major to true
+      }),
+      {}
+    );
 
     setFilters({
       ...filters,
-      majors: major === "" ? // If "All Majors" is selected
-        Object.keys(filters.majors).reduce((acc, m) => ({
-          ...acc,
-          [m]: false
-        }), {})
-        : newMajors
+      majors:
+        major === "" // If "All Majors" is selected
+          ? Object.keys(filters.majors).reduce(
+              (acc, m) => ({
+                ...acc,
+                [m]: false,
+              }),
+              {}
+            )
+          : newMajors,
     });
   };
 
   // Update the filterLabs function
   const filterLabs = (searchTerm: string) => {
-    let filtered = labs.filter((lab) => {
+    const filtered = labs.filter((lab) => {
       // Search term matching
-      const searchMatch = !searchTerm || [
-        lab.name,
-        lab.department,
-        lab.description,
-        lab.profName,
-        ...lab.relevantMajors,
-        ...lab.focusAreas
-      ].some(field => 
-        field?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const searchMatch =
+        !searchTerm ||
+        [
+          lab.name,
+          lab.department,
+          lab.description,
+          lab.profName,
+          ...lab.relevantMajors,
+          ...lab.focusAreas,
+        ].some((field) =>
+          field?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
 
       // Get active filters
-      const selectedDepartment = Object.entries(filters.departments)
-        .find(([_, isSelected]) => isSelected)?.[0];
-      const selectedFocus = Object.entries(filters.focus)
-        .find(([_, isSelected]) => isSelected)?.[0];
-      const selectedMajor = Object.entries(filters.majors)
-        .find(([_, isSelected]) => isSelected)?.[0];
+      const selectedDepartment = Object.entries(filters.departments).find(
+        ([_, isSelected]) => isSelected
+      )?.[0];
+      const selectedFocus = Object.entries(filters.focus).find(
+        ([_, isSelected]) => isSelected
+      )?.[0];
+      const selectedMajor = Object.entries(filters.majors).find(
+        ([_, isSelected]) => isSelected
+      )?.[0];
 
       // Department matching using assigned departments
-      const departmentMatch = !selectedDepartment || 
+      const departmentMatch =
+        !selectedDepartment ||
         lab.assignedDepartments.includes(selectedDepartment);
 
       // Focus and major matching
-      const focusMatch = !selectedFocus || lab.focusAreas.includes(selectedFocus);
-      const majorMatch = !selectedMajor || lab.relevantMajors.includes(selectedMajor);
+      const focusMatch =
+        !selectedFocus || lab.focusAreas.includes(selectedFocus);
+      const majorMatch =
+        !selectedMajor || lab.relevantMajors.includes(selectedMajor);
 
       return searchMatch && departmentMatch && focusMatch && majorMatch;
     });
 
     // Sort results by department relevance if department is selected
-    const selectedDepartment = Object.entries(filters.departments)
-      .find(([_, isSelected]) => isSelected)?.[0];
+    const selectedDepartment = Object.entries(filters.departments).find(
+      ([_, isSelected]) => isSelected
+    )?.[0];
 
     if (selectedDepartment) {
       filtered.sort((a, b) => {
@@ -560,21 +723,21 @@ export default function Directory() {
   const calculateRelevance = (lab: Lab, searchTerm: string): number => {
     let score = 0;
     const term = searchTerm.toLowerCase();
-    
+
     // Exact matches in important fields get higher scores
     if (lab.name.toLowerCase().includes(term)) score += 10;
     if (lab.department.toLowerCase().includes(term)) score += 8;
     if (lab.profName.toLowerCase().includes(term)) score += 6;
     if (lab.description.toLowerCase().includes(term)) score += 4;
-    
+
     // Matches in arrays get lower scores
-    lab.relevantMajors.forEach(major => {
+    lab.relevantMajors.forEach((major) => {
       if (major.toLowerCase().includes(term)) score += 3;
     });
-    lab.focusAreas.forEach(focus => {
+    lab.focusAreas.forEach((focus) => {
       if (focus.toLowerCase().includes(term)) score += 2;
     });
-    
+
     return score;
   };
 
@@ -825,10 +988,14 @@ export default function Directory() {
                     padding: "0.5rem",
                     borderRadius: "0.375rem",
                     border: "1px solid #e2e8f0",
-                    marginBottom: "1rem"
+                    marginBottom: "1rem",
                   }}
                   onChange={(e) => toggleDepartmentFilter(e.target.value)}
-                  value={Object.entries(filters.departments).find(([_, isSelected]) => isSelected)?.[0] || ""}
+                  value={
+                    Object.entries(filters.departments).find(
+                      ([_, isSelected]) => isSelected
+                    )?.[0] || ""
+                  }
                 >
                   <option value="">All Departments</option>
                   {Object.keys(filters.departments).map((dept) => (
@@ -873,7 +1040,7 @@ export default function Directory() {
                     padding: "0.5rem",
                     borderRadius: "0.375rem",
                     border: "1px solid #e2e8f0",
-                    marginBottom: "1rem"
+                    marginBottom: "1rem",
                   }}
                   onChange={(e) => toggleMajorFilter(e.target.value)}
                 >

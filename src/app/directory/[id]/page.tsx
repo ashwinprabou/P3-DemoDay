@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import styles from "../../page.module.css"; // Global styles
+import styles from "../../page.module.css"; // Ensure this path is correct
 import Papa from "papaparse";
 
 interface Lab {
@@ -58,101 +58,195 @@ export default function LabProfile() {
   if (!lab) {
     return <p className={styles.loading}>Loading lab details...</p>;
   }
-
-  // Custom styles for this page (extending module CSS)
-  const customStyles = {
-    labTitle: {
-      fontSize: "2.5rem",
-      color: "#1a365d",
-      fontWeight: "bold",
-    },
-    labDepartment: {
-      fontSize: "1.2rem",
-      color: "#666",
-      marginTop: "5px",
-    },
-    labDescription: {
-      fontSize: "1.1rem",
-      lineHeight: "1.6",
-      color: "#333",
-      marginBottom: "20px",
-    },
-    contactSection: {
-      marginTop: "30px",
-    },
-    buttonGroup: {
-      display: "flex",
-      justifyContent: "space-between",
-      marginTop: "30px",
-    },
-    applyButton: {
-      backgroundColor: "#1a365d",
-      color: "white",
-      padding: "12px 20px",
-      cursor: "pointer",
-      borderRadius: "5px",
-      transition: "all 0.3s ease",
-    },
-    contactButton: {
-      backgroundColor: "#1a365d",
-      color: "white",
-      padding: "12px 20px",
-      cursor: "pointer",
-      borderRadius: "5px",
-      transition: "all 0.3s ease",
-    },
-  };
-
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <h1 className={styles.labTitle} style={customStyles.labTitle}>
-          {lab.name}
-        </h1>
-        <p className={styles.labDepartment} style={customStyles.labDepartment}>
-          {lab.department}
-        </p>
-      </header>
+    <div className="page-container">
+      <div className="container">
+        <div className="main-content">
+          <div className="left-column">
+            <h2>{lab.name}</h2>
+            <div className="lab-description">{lab.description}</div>
+            <div className="contact-details">
+              <div className="section-title">Contact Details</div>
+              <div>Email: {lab.contact}</div>
+              {lab.professor && <div>Professor: {lab.professor}</div>}
+            </div>
+          </div>
 
-      <section className={styles.labContent}>
-        <p
-          className={styles.labDescription}
-          style={customStyles.labDescription}
-        >
-          {lab.description}
-        </p>
-
-        <div
-          className={styles.contactSection}
-          style={customStyles.contactSection}
-        >
-          <h3>Contact Details</h3>
-          <p>Email: {lab.contact}</p>
+          <div className="right-column">
+            <div className="right-buttons">
+              <a
+                href={lab.applicationLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="apply-button"
+              >
+                Apply!
+              </a>
+              <a href={`mailto:${lab.contact}`} className="contact-lab-button">
+                Contact Lab!
+              </a>
+              <a href="./" className="back-button">
+                Back to Lab Directory
+              </a>
+            </div>
+          </div>
         </div>
-
-        <div className={styles.buttonGroup} style={customStyles.buttonGroup}>
-          <a
-            href={lab.applicationLink}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <button
-              className={styles.applyButton}
-              style={customStyles.applyButton}
-            >
-              Apply!
-            </button>
-          </a>
-          <a href={`mailto:${lab.contact}`}>
-            <button
-              className={styles.contactButton}
-              style={customStyles.contactButton}
-            >
-              Contact
-            </button>
-          </a>
-        </div>
-      </section>
+      </div>
+      <style jsx>{`
+        .page-container {
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
+          font-family: Arial, sans-serif;
+        }
+        .container {
+          max-width: 1000px;
+          margin: 0 auto;
+          background-color: white;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          flex: 1;
+          width: 100%;
+        }
+        .header {
+          background-color: #f5f5f5;
+          padding: 15px 20px;
+          border-bottom: 1px solid #ddd;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .logo {
+          display: flex;
+          align-items: center;
+        }
+        .logo-text-lab {
+          color: #14457f;
+          font-size: 28px;
+          font-weight: bold;
+        }
+        .logo-text-ucsc {
+          color: #f5c526;
+          font-size: 28px;
+          font-weight: bold;
+        }
+        .nav-button {
+          background-color: #ccc;
+          padding: 5px 15px;
+          border-radius: 5px;
+          color: #333;
+          text-decoration: none;
+          font-size: 16px;
+        }
+        .main-content {
+          display: flex;
+          padding: 30px;
+          min-height: 400px;
+        }
+        .left-column {
+          flex: 7;
+          padding-right: 40px;
+        }
+        .right-column {
+          flex: 3;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        }
+        h2 {
+          font-size: 32px;
+          margin-top: 0;
+          margin-bottom: 20px;
+          color: #14457f;
+        }
+        .lab-description {
+          margin-bottom: 30px;
+          font-size: 18px;
+          line-height: 1.6;
+        }
+        .section-title {
+          font-size: 24px;
+          font-weight: bold;
+          margin-top: 20px;
+          margin-bottom: 15px;
+          color: #333;
+        }
+        .contact-details {
+          margin-bottom: 30px;
+          font-size: 18px;
+          line-height: 1.6;
+        }
+        .right-buttons {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 15px;
+        }
+        .apply-button {
+          display: block;
+          width: 90%;
+          background-color: #fcd34d;
+          border: none;
+          color: black;
+          padding: 12px 20px;
+          border-radius: 5px;
+          text-align: center;
+          cursor: pointer;
+          text-decoration: none;
+          font-size: 18px;
+          font-weight: bold;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .apply-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        .contact-lab-button {
+          display: block;
+          width: 90%;
+          background-color: #14457f;
+          border: none;
+          color: white;
+          padding: 12px 20px;
+          border-radius: 5px;
+          text-align: center;
+          cursor: pointer;
+          text-decoration: none;
+          font-size: 18px;
+          font-weight: bold;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .contact-lab-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        .back-button {
+          display: block;
+          width: 90%;
+          background-color: #ddd;
+          color: #333;
+          padding: 12px 20px;
+          border-radius: 5px;
+          text-align: center;
+          cursor: pointer;
+          text-decoration: none;
+          font-size: 18px;
+          font-weight: bold;
+          transition: background-color 0.2s;
+        }
+        .back-button:hover {
+          background-color: #ccc;
+        }
+        .loading {
+          text-align: center;
+          padding: 50px;
+          font-size: 20px;
+          color: #666;
+        }
+      `}</style>
     </div>
   );
 }
