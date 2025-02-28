@@ -530,71 +530,70 @@ export default function Directory() {
     });
   };
 
-  // Update the filterLabs function
-  const filterLabs = (term: string) => {
-    const filtered = labs.filter((lab) => {
-      // Search term matching
-      const searchMatch =
-        !term ||
-        [
-          lab.name,
-          lab.department,
-          lab.description,
-          lab.profName,
-          ...lab.relevantMajors,
-          ...lab.focusAreas,
-        ].some((field) => field?.toLowerCase().includes(term.toLowerCase()));
+  useEffect(() => {
+    // Define filterLabs inside the effect
+    const filterLabs = (term: string) => {
+      const filtered = labs.filter((lab) => {
+        // Search term matching
+        const searchMatch =
+          !term ||
+          [
+            lab.name,
+            lab.department,
+            lab.description,
+            lab.profName,
+            ...lab.relevantMajors,
+            ...lab.focusAreas,
+          ].some((field) => field?.toLowerCase().includes(term.toLowerCase()));
 
-      // Get active filters
+        // Get active filters
+        const selectedDepartment = Object.entries(filters.departments).find(
+          ([, isSelected]) => isSelected
+        )?.[0];
+        const selectedFocus = Object.entries(filters.focus).find(
+          ([, isSelected]) => isSelected
+        )?.[0];
+        const selectedMajor = Object.entries(filters.majors).find(
+          ([, isSelected]) => isSelected
+        )?.[0];
+
+        // Department matching using assigned departments
+        const departmentMatch =
+          !selectedDepartment ||
+          lab.assignedDepartments.includes(selectedDepartment);
+
+        // Focus and major matching
+        const focusMatch =
+          !selectedFocus || lab.focusAreas.includes(selectedFocus);
+        const majorMatch =
+          !selectedMajor || lab.relevantMajors.includes(selectedMajor);
+
+        return searchMatch && departmentMatch && focusMatch && majorMatch;
+      });
+
+      // Sort results by department relevance if department is selected
       const selectedDepartment = Object.entries(filters.departments).find(
         ([, isSelected]) => isSelected
       )?.[0];
-      const selectedFocus = Object.entries(filters.focus).find(
-        ([, isSelected]) => isSelected
-      )?.[0];
-      const selectedMajor = Object.entries(filters.majors).find(
-        ([, isSelected]) => isSelected
-      )?.[0];
 
-      // Department matching using assigned departments
-      const departmentMatch =
-        !selectedDepartment ||
-        lab.assignedDepartments.includes(selectedDepartment);
+      if (selectedDepartment) {
+        filtered.sort((a, b) => {
+          const aIndex = a.assignedDepartments.indexOf(selectedDepartment);
+          const bIndex = b.assignedDepartments.indexOf(selectedDepartment);
+          // Put exact matches first, then sort by presence in assignedDepartments
+          if (aIndex === -1 && bIndex === -1) return 0;
+          if (aIndex === -1) return 1;
+          if (bIndex === -1) return -1;
+          return aIndex - bIndex;
+        });
+      }
 
-      // Focus and major matching
-      const focusMatch =
-        !selectedFocus || lab.focusAreas.includes(selectedFocus);
-      const majorMatch =
-        !selectedMajor || lab.relevantMajors.includes(selectedMajor);
+      setFilteredLabs(filtered);
+    };
 
-      return searchMatch && departmentMatch && focusMatch && majorMatch;
-    });
-
-    // Sort results by department relevance if department is selected
-    const selectedDepartment = Object.entries(filters.departments).find(
-      ([, isSelected]) => isSelected
-    )?.[0];
-
-    if (selectedDepartment) {
-      filtered.sort((a, b) => {
-        const aIndex = a.assignedDepartments.indexOf(selectedDepartment);
-        const bIndex = b.assignedDepartments.indexOf(selectedDepartment);
-        // Put exact matches first, then sort by presence in assignedDepartments
-        if (aIndex === -1 && bIndex === -1) return 0;
-        if (aIndex === -1) return 1;
-        if (bIndex === -1) return -1;
-        return aIndex - bIndex;
-      });
-    }
-
-    setFilteredLabs(filtered);
-  };
-
-  // Update useEffect to include all filter dependencies
-  useEffect(() => {
+    // Call the function
     filterLabs(searchTerm);
   }, [searchTerm, filters.departments, filters.focus, filters.majors, labs]);
-
   // Handle search input changes
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -830,7 +829,7 @@ export default function Directory() {
                   onChange={(e) => toggleDepartmentFilter(e.target.value)}
                   value={
                     Object.entries(filters.departments).find(
-                      ([_, isSelected]) => isSelected
+                      ([, isSelected]) => isSelected
                     )?.[0] || ""
                   }
                 >

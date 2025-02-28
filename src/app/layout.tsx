@@ -1,7 +1,7 @@
 // app/layout.tsx
 import type { Metadata } from "next";
+import Link from "next/link";
 import "./globals.css";
-
 
 export const metadata: Metadata = {
   title: "LabConnect UCSC",
@@ -46,7 +46,7 @@ export default function RootLayout({
               </h1>
             </div>
             <nav style={{ display: "flex", gap: "1rem" }}>
-              <a
+              <Link
                 href="/"
                 style={{
                   color: "#4a5568",
@@ -55,8 +55,8 @@ export default function RootLayout({
                 }}
               >
                 Home
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/directory"
                 style={{
                   color: "#4a5568",
@@ -65,7 +65,7 @@ export default function RootLayout({
                 }}
               >
                 Directory
-              </a>
+              </Link>
             </nav>
           </div>
         </header>
