@@ -9,17 +9,16 @@ interface Lab {
   id: number;
   name: string;
   department: string;
-  //description: string;
-  //matchScore: number;
-  //funding: number; // Add funding property
+  description: string;
+  profName: string;
+  relevantMajors: string[];  // Add array of relevant majors
+  focusAreas: string[];      // Add array of focus areas
 }
 
 interface CsvRow {
   Name: string;
   Department: string;
   Description: string;
-  matchScore: string;
-  funding: string;
   Professor: string;
 }
 
@@ -30,11 +29,184 @@ interface Filters {
   focus: {
     [key: string]: boolean;
   };
-  funding: {
-    min: number;
-    max: number;
+  majors: {
+    [key: string]: boolean;
   };
 }
+
+// Enhanced keyword mapping for better major-lab matching
+const majorKeywords: { [key: string]: string[] } = {
+  "Computer Science": [
+    "computer science",
+    "programming",
+    "software",
+    "algorithms",
+    "AI",
+    "machine learning",
+    "data science",
+    "artificial intelligence",
+    "computational",
+    "database",
+    "web development",
+    "cybersecurity",
+    "computer vision",
+    "natural language processing"
+  ],
+  "Electrical Engineering": [
+    "electrical",
+    "circuits",
+    "electronics",
+    "signal processing",
+    "embedded systems",
+    "power systems",
+    "microelectronics",
+    "control systems",
+    "semiconductor",
+    "VLSI",
+    "communications",
+    "RF",
+    "wireless"
+  ],
+  "Mechanical Engineering": [
+    "mechanical",
+    "robotics",
+    "dynamics",
+    "thermodynamics",
+    "materials",
+    "fluid mechanics",
+    "heat transfer",
+    "CAD",
+    "manufacturing",
+    "aerospace",
+    "automotive",
+    "biomechanics",
+    "mechatronics"
+  ],
+  "Chemical Engineering": [
+    "chemical",
+    "process",
+    "materials science",
+    "polymers",
+    "reaction engineering",
+    "separation processes",
+    "catalysis",
+    "biochemical",
+    "nanotechnology",
+    "electrochemistry"
+  ],
+  "Biology": [
+    "biology",
+    "molecular",
+    "cellular",
+    "genetics",
+    "biochemistry",
+    "microbiology",
+    "immunology",
+    "neuroscience",
+    "physiology",
+    "biotechnology",
+    "genomics",
+    "proteomics"
+  ],
+  "Chemistry": [
+    "chemistry",
+    "organic",
+    "inorganic",
+    "analytical",
+    "synthesis",
+    "physical chemistry",
+    "spectroscopy",
+    "materials chemistry",
+    "biochemistry",
+    "pharmaceutical"
+  ],
+  "Physics": [
+    "physics",
+    "quantum",
+    "optics",
+    "mechanics",
+    "theoretical",
+    "astrophysics",
+    "particle physics",
+    "condensed matter",
+    "nuclear",
+    "plasma",
+    "computational physics"
+  ],
+  "Mathematics": [
+    "mathematics",
+    "mathematical",
+    "statistics",
+    "computational",
+    "analysis",
+    "algebra",
+    "topology",
+    "probability",
+    "optimization",
+    "numerical methods",
+    "differential equations"
+  ]
+};
+
+// Enhanced analysis function with scoring
+const analyzeLabForMajors = (description: string, department: string): string[] => {
+  const scores: { [key: string]: number } = {};
+  const descriptionLower = description.toLowerCase();
+  const departmentLower = department.toLowerCase();
+
+  // Initialize scores
+  Object.keys(majorKeywords).forEach(major => {
+    scores[major] = 0;
+  });
+
+  // Score based on department (higher weight)
+  Object.keys(majorKeywords).forEach(major => {
+    if (departmentLower.includes(major.toLowerCase())) {
+      scores[major] += 3; // Higher weight for department match
+    }
+  });
+
+  // Score based on keywords in description
+  Object.entries(majorKeywords).forEach(([major, keywords]) => {
+    keywords.forEach(keyword => {
+      if (descriptionLower.includes(keyword.toLowerCase())) {
+        scores[major] += 1;
+      }
+    });
+  });
+
+  // Return majors with scores above threshold (adjust as needed)
+  const threshold = 2; // Minimum score to be considered relevant
+  return Object.entries(scores)
+    .filter(([_, score]) => score >= threshold)
+    .sort(([_, scoreA], [__, scoreB]) => scoreB - scoreA)
+    .map(([major, _]) => major);
+};
+
+// Helper function to analyze lab description and extract focus areas
+const analyzeLabForFocus = (description: string): string[] => {
+  const focusKeywords: { [key: string]: string[] } = {
+    "Artificial Intelligence": ["artificial intelligence", "AI", "machine learning", "deep learning", "neural networks"],
+    "Data Science": ["data science", "big data", "analytics", "statistical analysis", "data mining"],
+    "Biotechnology": ["biotechnology", "genetic engineering", "molecular biology", "cell culture"],
+    "Robotics": ["robotics", "automation", "control systems", "mechatronics"],
+    "Materials Science": ["materials", "nanomaterials", "polymers", "composites"],
+    "Environmental Science": ["environmental", "sustainability", "climate", "ecology"],
+    "Quantum Computing": ["quantum", "quantum mechanics", "quantum computing"],
+    "Medical Research": ["medical", "biomedical", "clinical", "therapeutic", "drug discovery"]
+  };
+
+  const focusAreas: string[] = [];
+  const descriptionLower = description.toLowerCase();
+
+  Object.entries(focusKeywords).forEach(([focus, keywords]) => {
+    if (keywords.some(keyword => descriptionLower.includes(keyword))) {
+      focusAreas.push(focus);
+    }
+  });
+
+  return focusAreas;
+};
 
 export default function Directory() {
   const [labs, setLabs] = useState<Lab[]>([]);
@@ -42,20 +214,103 @@ export default function Directory() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filters, setFilters] = useState<Filters>({
     departments: {
-      Biology: false,
-      Physics: false,
-      "Computer Science": false,
+      "Engineering": false,
+      "Natural Sciences": false,
+      "Computer & Data Sciences": false,
+      "Life Sciences": false,
+      "Physical Sciences": false,
+      "Applied Sciences": false,
+      "Mathematical Sciences": false,
+      "Biomedical Sciences": false,
     },
     focus: {
-      "Focus 1": false,
-      "Focus 2": false,
-      "Focus 3": false,
+      "Artificial Intelligence": false,
+      "Data Science": false,
+      "Biotechnology": false,
+      "Robotics": false,
+      "Materials Science": false,
+      "Environmental Science": false,
+      "Quantum Computing": false,
+      "Medical Research": false,
     },
-    funding: {
-      min: 1000,
-      max: 10000,
+    majors: {
+      // Engineering
+      "Mechanical Engineering": false,
+      "Electrical Engineering": false,
+      "Chemical Engineering": false,
+      "Computer Engineering": false,
+      "Biomedical Engineering": false,
+      "Civil Engineering": false,
+      "Aerospace Engineering": false,
+      "Environmental Engineering": false,
+      "Materials Engineering": false,
+      "Industrial Engineering": false,
+      // Computer & Data Sciences
+      "Computer Science": false,
+      "Data Science": false,
+      "Software Engineering": false,
+      "Information Technology": false,
+      // Life Sciences
+      "Biology": false,
+      "Biochemistry": false,
+      "Molecular Biology": false,
+      "Neuroscience": false,
+      "Biotechnology": false,
+      // Physical Sciences
+      "Physics": false,
+      "Chemistry": false,
+      "Astronomy": false,
+      "Earth Sciences": false,
+      // Mathematical Sciences
+      "Mathematics": false,
+      "Applied Mathematics": false,
+      "Statistics": false,
+      "Computational Mathematics": false,
     },
   });
+
+  // Helper function to map specific majors to broader departments
+  const getMajorDepartment = (major: string): string => {
+    const departmentMap: { [key: string]: string } = {
+      // Engineering Department
+      "Mechanical Engineering": "Engineering",
+      "Electrical Engineering": "Engineering",
+      "Chemical Engineering": "Engineering",
+      "Computer Engineering": "Engineering",
+      "Biomedical Engineering": "Engineering",
+      "Civil Engineering": "Engineering",
+      "Aerospace Engineering": "Engineering",
+      "Environmental Engineering": "Engineering",
+      "Materials Engineering": "Engineering",
+      "Industrial Engineering": "Engineering",
+      
+      // Computer & Data Sciences Department
+      "Computer Science": "Computer & Data Sciences",
+      "Data Science": "Computer & Data Sciences",
+      "Software Engineering": "Computer & Data Sciences",
+      "Information Technology": "Computer & Data Sciences",
+      
+      // Life Sciences Department
+      "Biology": "Life Sciences",
+      "Biochemistry": "Life Sciences",
+      "Molecular Biology": "Life Sciences",
+      "Neuroscience": "Life Sciences",
+      "Biotechnology": "Life Sciences",
+      
+      // Physical Sciences Department
+      "Physics": "Physical Sciences",
+      "Chemistry": "Physical Sciences",
+      "Astronomy": "Physical Sciences",
+      "Earth Sciences": "Physical Sciences",
+      
+      // Mathematical Sciences Department
+      "Mathematics": "Mathematical Sciences",
+      "Applied Mathematics": "Mathematical Sciences",
+      "Statistics": "Mathematical Sciences",
+      "Computational Mathematics": "Mathematical Sciences",
+    };
+    return departmentMap[major] || "";
+  };
 
   // Fetch labs data
   useEffect(() => {
@@ -66,69 +321,124 @@ export default function Directory() {
       download: true,
       header: true,
       complete: (results) => {
-        const labs = results.data.map((row, index) => ({
-          id: index + 1,
-          name: row.Name,
-          department: row.Department,
-          description: row.Description,
-          profName: row.Professor,
-          //matchScore: parseInt(row.matchScore),
-          funding: parseInt(row.funding),
-        }));
+        const labs = results.data.map((row, index) => {
+          const relevantMajors = analyzeLabForMajors(row.Description, row.Department);
+          const focusAreas = analyzeLabForFocus(row.Description);
+          
+          return {
+            id: index + 1,
+            name: row.Name,
+            department: row.Department,
+            description: row.Description,
+            profName: row.Professor,
+            relevantMajors,
+            focusAreas,
+          };
+        });
         setLabs(labs);
         setFilteredLabs(labs);
       },
     });
   }, []); // Empty dependency array for loading once
 
-  // Filter labs based on search term and funding
+  // Update department filter for dropdown
+  const toggleDepartmentFilter = (department: string) => {
+    const newDepartments = Object.keys(filters.departments).reduce((acc, dept) => ({
+      ...acc,
+      [dept]: dept === department // Only set selected department to true
+    }), {});
+
+    setFilters({
+      ...filters,
+      departments: department === "" ? // If "All Departments" is selected
+        Object.keys(filters.departments).reduce((acc, dept) => ({
+          ...acc,
+          [dept]: false
+        }), {}) 
+        : newDepartments
+    });
+  };
+
+  // Update focus filter for dropdown
+  const toggleFocusFilter = (focus: string) => {
+    const newFocus = Object.keys(filters.focus).reduce((acc, f) => ({
+      ...acc,
+      [f]: f === focus // Only set selected focus to true
+    }), {});
+
+    setFilters({
+      ...filters,
+      focus: focus === "" ? // If "All Focus Areas" is selected
+        Object.keys(filters.focus).reduce((acc, f) => ({
+          ...acc,
+          [f]: false
+        }), {})
+        : newFocus
+    });
+  };
+
+  // Add major filter toggle function
+  const toggleMajorFilter = (major: string) => {
+    const newMajors = Object.keys(filters.majors).reduce((acc, m) => ({
+      ...acc,
+      [m]: m === major // Only set selected major to true
+    }), {});
+
+    setFilters({
+      ...filters,
+      majors: major === "" ? // If "All Majors" is selected
+        Object.keys(filters.majors).reduce((acc, m) => ({
+          ...acc,
+          [m]: false
+        }), {})
+        : newMajors
+    });
+  };
+
+  // Update filterLabs function to use the department mapping
   const filterLabs = (searchTerm: string) => {
     const filtered = labs.filter((lab) => {
-      const name = lab.name?.toLowerCase() || "";
-      const department = lab.department?.toLowerCase() || "";
-      //const description = lab.description?.toLowerCase() || "";
+      const searchFields = [
+        lab.name?.toLowerCase() || "",
+        lab.department?.toLowerCase() || "",
+        lab.description?.toLowerCase() || "",
+        lab.profName?.toLowerCase() || "",
+      ];
+      const searchTermLower = searchTerm.toLowerCase();
+      
+      const selectedDepartment = Object.entries(filters.departments).find(([_, isSelected]) => isSelected);
+      const selectedFocus = Object.entries(filters.focus).find(([_, isSelected]) => isSelected);
+      const selectedMajor = Object.entries(filters.majors).find(([_, isSelected]) => isSelected);
+
+      // Department matching now checks if the lab's department falls under the broader category
+      const departmentMatch = !selectedDepartment || (
+        selectedDepartment && 
+        (lab.department.includes(selectedDepartment[0]) || 
+         lab.relevantMajors.some(major => getMajorDepartment(major) === selectedDepartment[0]))
+      );
+      
+      const focusMatch = !selectedFocus || (selectedFocus && lab.focusAreas.includes(selectedFocus[0]));
+      const majorMatch = !selectedMajor || (selectedMajor && lab.relevantMajors.includes(selectedMajor[0]));
 
       return (
-        name.includes(searchTerm.toLowerCase()) ||
-        department.includes(searchTerm.toLowerCase())
-        //description.includes(searchTerm.toLowerCase())
-        //lab.funding >= minFunding
+        searchFields.some(field => field.includes(searchTermLower)) &&
+        departmentMatch &&
+        focusMatch &&
+        majorMatch
       );
     });
 
     setFilteredLabs(filtered);
   };
 
-  // Update filtered labs when search term or funding filter changes
+  // Update useEffect to include all filter dependencies
   useEffect(() => {
     filterLabs(searchTerm);
-  }, [searchTerm, filters.funding.min, labs]);
+  }, [searchTerm, filters.departments, filters.focus, filters.majors, labs]);
 
   // Handle search input changes
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-  };
-
-  // Toggle department filter
-  const toggleDepartmentFilter = (department: string) => {
-    setFilters({
-      ...filters,
-      departments: {
-        ...filters.departments,
-        [department]: !filters.departments[department],
-      },
-    });
-  };
-
-  // Toggle focus filter
-  const toggleFocusFilter = (focus: string) => {
-    setFilters({
-      ...filters,
-      focus: {
-        ...filters.focus,
-        [focus]: !filters.focus[focus],
-      },
-    });
   };
 
   // Custom styles for this page (extending module CSS)
@@ -357,97 +667,75 @@ export default function Directory() {
                 Filters:
               </h3>
 
-              {/* Department Filter */}
+              {/* Department Filter Dropdown */}
               <div style={customStyles.filterSection}>
                 <div style={customStyles.filterHeader}>
                   <h4 style={customStyles.filterTitle}>Department</h4>
                 </div>
-                <div style={customStyles.filterOptions}>
+                <select
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem",
+                    borderRadius: "0.375rem",
+                    border: "1px solid #e2e8f0",
+                    marginBottom: "1rem"
+                  }}
+                  onChange={(e) => toggleDepartmentFilter(e.target.value)}
+                >
+                  <option value="">All Departments</option>
                   {Object.keys(filters.departments).map((dept) => (
-                    <div key={dept} style={customStyles.filterOption}>
-                      <input
-                        id={`department-${dept}`}
-                        name={`department-${dept}`}
-                        type="checkbox"
-                        checked={filters.departments[dept]}
-                        onChange={() => toggleDepartmentFilter(dept)}
-                        style={customStyles.checkbox}
-                      />
-                      <label
-                        htmlFor={`department-${dept}`}
-                        style={{ fontSize: "0.875rem" }}
-                      >
-                        {dept}
-                      </label>
-                    </div>
+                    <option key={dept} value={dept}>
+                      {dept}
+                    </option>
                   ))}
-                </div>
+                </select>
               </div>
 
-              {/* Focus Filter */}
+              {/* Focus Filter Dropdown */}
               <div style={customStyles.filterSection}>
                 <div style={customStyles.filterHeader}>
                   <h4 style={customStyles.filterTitle}>Focus</h4>
                 </div>
-                <div style={customStyles.filterOptions}>
+                <select
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem",
+                    borderRadius: "0.375rem",
+                    border: "1px solid #e2e8f0",
+                  }}
+                  onChange={(e) => toggleFocusFilter(e.target.value)}
+                >
+                  <option value="">All Focus Areas</option>
                   {Object.keys(filters.focus).map((focus) => (
-                    <div key={focus} style={customStyles.filterOption}>
-                      <input
-                        id={`focus-${focus}`}
-                        name={`focus-${focus}`}
-                        type="checkbox"
-                        checked={filters.focus[focus]}
-                        onChange={() => toggleFocusFilter(focus)}
-                        style={customStyles.checkbox}
-                      />
-                      <label
-                        htmlFor={`focus-${focus}`}
-                        style={{ fontSize: "0.875rem" }}
-                      >
-                        {focus}
-                      </label>
-                    </div>
+                    <option key={focus} value={focus}>
+                      {focus}
+                    </option>
                   ))}
-                </div>
+                </select>
               </div>
 
-              {/* Funding Filter */}
+              {/* Major Filter Dropdown */}
               <div style={customStyles.filterSection}>
                 <div style={customStyles.filterHeader}>
-                  <h4 style={customStyles.filterTitle}>Funding</h4>
+                  <h4 style={customStyles.filterTitle}>Major</h4>
                 </div>
-                <div
+                <select
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.5rem",
+                    width: "100%",
+                    padding: "0.5rem",
+                    borderRadius: "0.375rem",
+                    border: "1px solid #e2e8f0",
+                    marginBottom: "1rem"
                   }}
+                  onChange={(e) => toggleMajorFilter(e.target.value)}
                 >
-                  <input
-                    type="range"
-                    min={1000}
-                    max={10000}
-                    value={filters.funding.min}
-                    onChange={(e) =>
-                      setFilters({
-                        ...filters,
-                        funding: {
-                          ...filters.funding,
-                          min: parseInt(e.target.value),
-                        },
-                      })
-                    }
-                    style={{ width: "100%" }}
-                  />
-                  <div style={customStyles.fundingRange}>
-                    <span style={{ fontWeight: "500" }}>
-                      ${filters.funding.min}
-                    </span>
-                    <span style={{ fontWeight: "500" }}>
-                      ${filters.funding.max}
-                    </span>
-                  </div>
-                </div>
+                  <option value="">All Majors</option>
+                  {Object.keys(filters.majors).map((major) => (
+                    <option key={major} value={major}>
+                      {major}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
