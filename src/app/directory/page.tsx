@@ -14,6 +14,7 @@ interface Lab {
   relevantMajors: string[];  // Add array of relevant majors
   focusAreas: string[];      // Add array of focus areas
   matchScore?: number; // Add optional match score
+  assignedDepartments: string[]; // Add this line
 }
 
 interface CsvRow {
@@ -149,6 +150,34 @@ const majorKeywords: { [key: string]: string[] } = {
   ]
 };
 
+// Add department keywords mapping
+const departmentKeywords: { [key: string]: string[] } = {
+  "Science": [
+    "science", "scientific", "research", "laboratory", "experimental"
+  ],
+  "Technology": [
+    "technology", "software", "computing", "digital", "cyber", "information", "tech"
+  ],
+  "Engineering": [
+    "engineering", "design", "systems", "mechanical", "electrical", "chemical", "civil", "biomedical"
+  ],
+  "Mathematics": [
+    "mathematics", "mathematical", "statistics", "computational", "numerical", "algebraic"
+  ],
+  "Social Sciences": [
+    "social", "psychology", "sociology", "economics", "behavioral", "cognitive"
+  ],
+  "Physical Sciences": [
+    "physics", "chemistry", "astronomy", "geological", "material", "quantum"
+  ],
+  "Biology": [
+    "biology", "biological", "molecular", "cellular", "genetic", "organism"
+  ],
+  "Biomedical Sciences": [
+    "biomedical", "medical", "clinical", "health", "therapeutic", "diagnostic"
+  ]
+};
+
 // Enhanced analyzeLabForMajors function with weighted scoring
 const analyzeLabForMajors = (description: string, department: string): string[] => {
   const scores: { [key: string]: number } = {};
@@ -212,6 +241,77 @@ const analyzeLabForFocus = (description: string): string[] => {
   });
 
   return focusAreas;
+};
+
+// Add function to analyze lab for departments
+const analyzeLabForDepartments = (description: string, labDepartment: string): string[] => {
+  const scores: { [key: string]: number } = {};
+  const descriptionLower = description.toLowerCase();
+  const labDepartmentLower = labDepartment.toLowerCase();
+
+  // Initialize scores
+  Object.keys(departmentKeywords).forEach(dept => {
+    scores[dept] = 0;
+    
+    // Department exact match gets highest weight
+    if (labDepartmentLower === dept.toLowerCase()) {
+      scores[dept] += 5;
+    }
+    // Department contains department name gets medium weight
+    else if (labDepartmentLower.includes(dept.toLowerCase())) {
+      scores[dept] += 3;
+    }
+  });
+
+  // Score based on keywords in description
+  Object.entries(departmentKeywords).forEach(([dept, keywords]) => {
+    const matches = new Set<string>();
+    keywords.forEach(keyword => {
+      if (descriptionLower.includes(keyword.toLowerCase())) {
+        matches.add(keyword);
+      }
+    });
+    // Add score based on unique matches
+    scores[dept] += Math.min(matches.size, 5);
+  });
+
+  // Return departments with scores above threshold
+  const threshold = 2;
+  return Object.entries(scores)
+    .filter(([_, score]) => score >= threshold)
+    .sort(([_, scoreA], [__, scoreB]) => scoreB - scoreA)
+    .map(([dept, _]) => dept);
+};
+
+// Update isDepartmentRelevant function to be more lenient with matching
+const isDepartmentRelevant = (labDepartment: string, selectedDepartment: string): boolean => {
+  if (!selectedDepartment) return true;
+  
+  const departmentRelations: { [key: string]: string[] } = {
+    "Science": ["Biology", "Chemistry", "Physics", "Life Sciences", "Physical Sciences", "Natural Sciences"],
+    "Technology": ["Computer Science", "Information Technology", "Software Engineering", "Computing", "IT"],
+    "Engineering": ["Mechanical", "Electrical", "Chemical", "Civil", "Biomedical", "Engineering"],
+    "Mathematics": ["Mathematics", "Statistics", "Applied Mathematics", "Mathematical"],
+    "Social Sciences": ["Psychology", "Sociology", "Economics", "Political Science", "Social"],
+    "Physical Sciences": ["Physics", "Chemistry", "Astronomy", "Earth Sciences", "Physical"],
+    "Biology": ["Biology", "Molecular", "Biochemistry", "Life Sciences", "Biological"],
+    "Biomedical Sciences": ["Biology", "Biomedical", "Medical", "Life Sciences", "Health"],
+  };
+
+  // Convert both to lowercase for case-insensitive comparison
+  const labDeptLower = labDepartment.toLowerCase();
+  const selectedDeptLower = selectedDepartment.toLowerCase();
+
+  // Direct match check
+  if (labDeptLower.includes(selectedDeptLower)) {
+    return true;
+  }
+
+  // Check related departments
+  const relatedDepartments = departmentRelations[selectedDepartment] || [];
+  return relatedDepartments.some(dept => 
+    labDeptLower.includes(dept.toLowerCase())
+  );
 };
 
 export default function Directory() {
@@ -330,6 +430,7 @@ export default function Directory() {
         const labs = results.data.map((row, index) => {
           const relevantMajors = analyzeLabForMajors(row.Description, row.Department);
           const focusAreas = analyzeLabForFocus(row.Description);
+          const assignedDepartments = analyzeLabForDepartments(row.Description, row.Department);
           
           return {
             id: index + 1,
@@ -339,6 +440,7 @@ export default function Directory() {
             profName: row.Professor,
             relevantMajors,
             focusAreas,
+            assignedDepartments,
           };
         });
         setLabs(labs);
@@ -351,18 +453,18 @@ export default function Directory() {
   const toggleDepartmentFilter = (department: string) => {
     const newDepartments = Object.keys(filters.departments).reduce((acc, dept) => ({
       ...acc,
-      [dept]: dept === department // Only set selected department to true
+      [dept]: dept === department
     }), {});
 
-    setFilters({
-      ...filters,
-      departments: department === "" ? // If "All Departments" is selected
-        Object.keys(filters.departments).reduce((acc, dept) => ({
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      departments: department === "" ? 
+        Object.keys(prevFilters.departments).reduce((acc, dept) => ({
           ...acc,
           [dept]: false
         }), {}) 
         : newDepartments
-    });
+    }));
   };
 
   // Update focus filter for dropdown
@@ -401,10 +503,10 @@ export default function Directory() {
     });
   };
 
-  // Enhanced filterLabs function with better search and filtering
+  // Update the filterLabs function
   const filterLabs = (searchTerm: string) => {
-    const filtered = labs.filter((lab) => {
-      // Improved search matching
+    let filtered = labs.filter((lab) => {
+      // Search term matching
       const searchMatch = !searchTerm || [
         lab.name,
         lab.department,
@@ -417,29 +519,37 @@ export default function Directory() {
       );
 
       // Get active filters
-      const selectedDepartment = Object.entries(filters.departments).find(([_, isSelected]) => isSelected)?.[0];
-      const selectedFocus = Object.entries(filters.focus).find(([_, isSelected]) => isSelected)?.[0];
-      const selectedMajor = Object.entries(filters.majors).find(([_, isSelected]) => isSelected)?.[0];
+      const selectedDepartment = Object.entries(filters.departments)
+        .find(([_, isSelected]) => isSelected)?.[0];
+      const selectedFocus = Object.entries(filters.focus)
+        .find(([_, isSelected]) => isSelected)?.[0];
+      const selectedMajor = Object.entries(filters.majors)
+        .find(([_, isSelected]) => isSelected)?.[0];
 
-      // Enhanced department matching
-      const departmentMatch = !selectedDepartment || (
-        lab.department.includes(selectedDepartment) || 
-        lab.relevantMajors.some(major => getMajorDepartment(major) === selectedDepartment)
-      );
+      // Department matching using assigned departments
+      const departmentMatch = !selectedDepartment || 
+        lab.assignedDepartments.includes(selectedDepartment);
 
-      // Direct focus and major matching
+      // Focus and major matching
       const focusMatch = !selectedFocus || lab.focusAreas.includes(selectedFocus);
       const majorMatch = !selectedMajor || lab.relevantMajors.includes(selectedMajor);
 
       return searchMatch && departmentMatch && focusMatch && majorMatch;
     });
 
-    // Sort results by relevance if there's a search term
-    if (searchTerm) {
+    // Sort results by department relevance if department is selected
+    const selectedDepartment = Object.entries(filters.departments)
+      .find(([_, isSelected]) => isSelected)?.[0];
+
+    if (selectedDepartment) {
       filtered.sort((a, b) => {
-        const aRelevance = calculateRelevance(a, searchTerm);
-        const bRelevance = calculateRelevance(b, searchTerm);
-        return bRelevance - aRelevance;
+        const aIndex = a.assignedDepartments.indexOf(selectedDepartment);
+        const bIndex = b.assignedDepartments.indexOf(selectedDepartment);
+        // Put exact matches first, then sort by presence in assignedDepartments
+        if (aIndex === -1 && bIndex === -1) return 0;
+        if (aIndex === -1) return 1;
+        if (bIndex === -1) return -1;
+        return aIndex - bIndex;
       });
     }
 
@@ -718,6 +828,7 @@ export default function Directory() {
                     marginBottom: "1rem"
                   }}
                   onChange={(e) => toggleDepartmentFilter(e.target.value)}
+                  value={Object.entries(filters.departments).find(([_, isSelected]) => isSelected)?.[0] || ""}
                 >
                   <option value="">All Departments</option>
                   {Object.keys(filters.departments).map((dept) => (
