@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+//import Link from "next/link";
 import styles from "./page.module.css";
 import { supabase } from "../../lib/supabaseClient";
 import OpenAI from "openai";
@@ -94,8 +94,7 @@ export default function LabSearch() {
             content: [
               {
                 type: "text",
-                text:
-                  "Analyze this document and extract the most relevant academic major along with additional keywords that represent skills or interests.",
+                text: "Analyze this document and extract the most relevant academic major along with additional keywords that represent skills or interests.",
               },
               {
                 type: "image_url",
@@ -110,8 +109,7 @@ export default function LabSearch() {
         max_tokens: 150,
       });
 
-      const resumeContent =
-        resumeResponse.choices[0]?.message?.content?.trim();
+      const resumeContent = resumeResponse.choices[0]?.message?.content?.trim();
       if (!resumeContent) throw new Error("Failed to extract resume details");
 
       // Parse the text response
@@ -178,8 +176,7 @@ ${JSON.stringify(allLabs, null, 2)}`,
         max_tokens: 1000,
       });
 
-      const analysisContent =
-        comparisonResponse.choices[0]?.message?.content;
+      const analysisContent = comparisonResponse.choices[0]?.message?.content;
       if (!analysisContent)
         throw new Error("Failed to get lab analysis from LLM");
 
@@ -205,17 +202,21 @@ ${JSON.stringify(allLabs, null, 2)}`,
 
       // Merge lab analysis with original lab data and sort by similarity score descending.
       // If a lab did not receive analysis from the LLM, include it with a default score of 0.
-      const enhancedLabs = allLabs.map((lab: LabAnalysis) => {
-        const analysis = labAnalysis.find((l) => l.id === lab.id);
-        return {
-          ...lab,
-          similarity_score: analysis ? analysis.similarity_score : 0,
-          match_reason: analysis ? analysis.match_reason : "No match details provided.",
-        };
-      }).sort(
-        (a: LabAnalysis, b: LabAnalysis) =>
-          (b.similarity_score || 0) - (a.similarity_score || 0)
-      );
+      const enhancedLabs = allLabs
+        .map((lab: LabAnalysis) => {
+          const analysis = labAnalysis.find((l) => l.id === lab.id);
+          return {
+            ...lab,
+            similarity_score: analysis ? analysis.similarity_score : 0,
+            match_reason: analysis
+              ? analysis.match_reason
+              : "No match details provided.",
+          };
+        })
+        .sort(
+          (a: LabAnalysis, b: LabAnalysis) =>
+            (b.similarity_score || 0) - (a.similarity_score || 0)
+        );
 
       // Filter labs to only include those with a similarity score of 4 or higher
       const highMatchLabs = enhancedLabs.filter(
@@ -345,11 +346,7 @@ ${JSON.stringify(allLabs, null, 2)}`,
         </div>
 
         {/* Error Message */}
-        {error && (
-          <div className={styles.error}>
-            {error}
-          </div>
-        )}
+        {error && <div className={styles.error}>{error}</div>}
 
         {/* Recommended Labs Grid */}
         {labs.length > 0 && (
@@ -357,11 +354,15 @@ ${JSON.stringify(allLabs, null, 2)}`,
             <h2>Recommended Labs for You</h2>
             <div className={styles.compiledGrid}>
               {labs.map((lab, index) => (
-                <div 
-                  key={lab.id} 
-                  className={styles.compiledCard} 
+                <div
+                  key={lab.id}
+                  className={styles.compiledCard}
                   style={{ "--index": index } as React.CSSProperties}
-                  data-top-match={lab.similarity_score && lab.similarity_score >= 2 ? "true" : "false"}
+                  data-top-match={
+                    lab.similarity_score && lab.similarity_score >= 2
+                      ? "true"
+                      : "false"
+                  }
                 >
                   <span className={styles.rankBadge}>{index + 1}</span>
                   <h3 className={styles.compiledLabName}>{lab["Lab Name"]}</h3>
@@ -372,21 +373,32 @@ ${JSON.stringify(allLabs, null, 2)}`,
                     <strong>Department:</strong> {lab.Department}
                   </p>
                   <div className={styles.compiledScore}>
-                    Match Score: 
-                    <span style={{ marginLeft: '8px', color: lab.similarity_score ? '#2ecc71' : '#ff6b6b' }}>
+                    Match Score:
+                    <span
+                      style={{
+                        marginLeft: "8px",
+                        color: lab.similarity_score ? "#2ecc71" : "#ff6b6b",
+                      }}
+                    >
                       {lab.similarity_score}/5
                     </span>
                   </div>
                   <div className={styles.compiledDescription}>
-                    <p><strong>Description:</strong></p>
+                    <p>
+                      <strong>Description:</strong>
+                    </p>
                     <p>{lab.Description}</p>
                   </div>
                   <div className={styles.compiledApplication}>
-                    <p><strong>How to apply:</strong></p>
+                    <p>
+                      <strong>How to apply:</strong>
+                    </p>
                     <p>{lab["How to apply"]}</p>
                   </div>
                   <div className={styles.compiledContact}>
-                    <p><strong>Contact:</strong> {lab.Contact}</p>
+                    <p>
+                      <strong>Contact:</strong> {lab.Contact}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -396,9 +408,7 @@ ${JSON.stringify(allLabs, null, 2)}`,
 
         {/* No labs message */}
         {!loading && !error && labs.length === 0 && (
-          <p className={styles.noLabs}>
-            Upload a resume to find matching labs
-          </p>
+          <p className={styles.noLabs}>Upload a resume to find matching labs</p>
         )}
       </main>
     </div>
