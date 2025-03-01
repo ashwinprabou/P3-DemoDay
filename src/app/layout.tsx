@@ -4,7 +4,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LabConnect UCSC",
+  title: "Slug Labs UCSC",
   description: "Find research opportunities across UCSC",
 };
 

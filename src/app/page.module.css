@@ -209,3 +209,99 @@
     margin-top: 0;
   }
 }
+
+.compiledList {
+  margin-top: 3rem;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.compiledList h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+  color: #003c6c; /* Matching the UCSC blue color theme */
+  text-align: center;
+  font-weight: 600;
+}
+
+.compiledGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.compiledCard {
+  position: relative;
+  background: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  border-left: 4px solid #ffcc5c;
+}
+
+.compiledCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.compiledCard .rankBadge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #003c6c; /* UCSC blue */
+  color: white;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.compiledLabName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #003c6c; /* UCSC blue */
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+
+.compiledProfessor {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.compiledScore {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #003c6c; /* UCSC blue */
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #eee;
+}
+
+/* For top matches (score 4-5) */
+.compiledCard[data-top-match="true"] {
+  border-left: 4px solid #2ecc71; /* Green for top matches */
+}
+
+/* Add animation for a bit of visual flair */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.compiledCard {
+  animation: fadeIn 0.3s ease-out forwards;
+  animation-delay: calc(var(--index) * 0.1s);
+  opacity: 0;
+}
